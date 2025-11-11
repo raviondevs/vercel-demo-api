@@ -1,16 +1,15 @@
-import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
 import mongoose from "mongoose";
 
 dotenv.config();
 
+import jobApplicationRoutes from "./routes/applications.js";
 import authRoutes from "./routes/auth.js";
-import projectRoutes from "./routes/project.js";
 import blogRoutes from "./routes/blog.js";
 import jobsRoutes from "./routes/jobs.js";
-import documentRoutes from "./routes/upload.js";
-import jobApplicationRoutes from "./routes/applications.js";
+import projectRoutes from "./routes/project.js";
 
 const app = express();
 app.use(cors());
@@ -38,7 +37,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/project", projectRoutes);
 app.use("/api/blog", blogRoutes);
 app.use("/api/jobs", jobsRoutes);
-app.use("/api/upload", documentRoutes);
+// app.use("/api/upload", documentRoutes);
 app.use("/api/application", jobApplicationRoutes);
 
 const PORT = process.env.PORT || 3000;
