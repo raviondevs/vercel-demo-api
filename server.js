@@ -5,6 +5,13 @@ import mongoose from "mongoose";
 
 dotenv.config();
 
+import authRoutes from "./routes/auth.js";
+import projectRoutes from "./routes/project.js";
+import blogRoutes from "./routes/blog.js";
+import jobsRoutes from "./routes/jobs.js";
+import documentRoutes from "./routes/upload.js";
+import jobApplicationRoutes from "./routes/applications.js";
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -23,9 +30,16 @@ app.get("/", (req, res) => {
 });
 
 // Example route
-app.get("/api/demo", (req, res) => {
-  res.json({ message: "Hello from demo route!" });
+app.get("/api/test", (req, res) => {
+  res.status(200).json({ status: "OK", message: "Server is running" });
 });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/project", projectRoutes);
+app.use("/api/blog", blogRoutes);
+app.use("/api/jobs", jobsRoutes);
+app.use("/api/upload", documentRoutes);
+app.use("/api/application", jobApplicationRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
