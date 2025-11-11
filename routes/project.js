@@ -73,7 +73,11 @@ router.post("/create-project", authenticateToken, async (req, res) => {
 });
 router.get("/projects", async (req, res) => {
   try {
-    const projects = await Project.find().select("-__v").populate("_id");
+    // Add timeout to the query to prevent buffering timeout
+    const projects = await Project.find()
+      .select("-__v")
+      .maxTimeMS(8000) // 8 second timeout for the query
+      .exec();
     res.json({ message: "Projects retrieved successfully", projects });
   } catch (error) {
     res

@@ -16,13 +16,46 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection (optional)
-if (process.env.MONGO_URI) {
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB connected"))
-    .catch((err) => console.error("❌ Mongo error:", err));
-}
+// MongoDB connection with proper error handling and timeouts
+let mongoConnected = false;
+
+const connectMongoDB = async () => {
+  if (!process.env.MONGO_URI) {
+    console.warn("⚠️ MONGO_URI not set. Running without database.");
+    return;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000, // 5 seconds to select a server
+      connectTimeoutMS: 10000, // 10 seconds to connect
+      socketTimeoutMS: 45000, // 45 seconds for socket operations
+      retryWrites: true,
+      w: "majority",
+    });
+    mongoConnected = true;
+    console.log("✅ MongoDB connected successfully");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+    mongoConnected = false;
+    // Retry connection after 5 seconds
+    setTimeout(connectMongoDB, 5000);
+  }
+};
+
+// Start MongoDB connection immediately
+connectMongoDB();
+
+// Middleware to check database connection status
+app.use((req, res, next) => {
+  if (!mongoConnected && req.path.startsWith("/api/")) {
+    return res.status(503).json({
+      message: "Database is not connected. Please try again later.",
+      status: "unavailable",
+    });
+  }
+  next();
+});
 
 // Basic route
 app.get("/", (req, res) => {
