@@ -11,8 +11,8 @@ const imagekit = new ImageKit({
   urlEndpoint: "https://ik.imagekit.io/your_imagekit_id/",
 });
 
-// Multer Config
-const upload = multer({ dest: "uploads/" });
+// Multer Config - Use memory storage for Vercel compatibility
+const upload = multer({ storage: multer.memoryStorage() });
 router.get("/test", authenticateToken, (req, res) => {
   res.json({ message: "This is a protected route", user: req.user });
 });
@@ -24,7 +24,7 @@ router.post("/upload-images", upload.array("images", 10), async (req, res) => {
 
     const uploadPromises = req.files.map((file) =>
       imagekit.upload({
-        file: fs.readFileSync(file.path),
+        file: file.buffer, // Use buffer instead of reading from disk
         fileName: file.originalname,
       })
     );
@@ -32,8 +32,7 @@ router.post("/upload-images", upload.array("images", 10), async (req, res) => {
     const uploadedImages = await Promise.all(uploadPromises);
     const imageUrls = uploadedImages.map((img) => img.url);
 
-    // Delete temp files
-    req.files.forEach((file) => fs.unlinkSync(file.path));
+    // No need to delete temp files when using memory storage
 
     res.status(200).json({
       message: "Images uploaded successfully",
